@@ -1,0 +1,13 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "order-api"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-l1tx4r4itdr5"
+s3_prefix = "order-api"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "OrderApiLambdaFunctionName=\"order-api\""
+image_repositories = []
+disable_rollback = true
