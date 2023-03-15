@@ -2,7 +2,7 @@ package com.aws.outboxpattern.domain.mapper;
 
 import com.aws.outboxpattern.domain.event.OrderCreatedEvent;
 import com.aws.outboxpattern.domain.valueobject.PaymentOrderStatus;
-import com.aws.outboxpattern.model.payment.OrderPaymentEventPayload;
+import com.aws.outboxpattern.infrastructure.dynamodb.model.payment.OrderPaymentEventPayload;
 
 public class OrderDataMapper {
 	

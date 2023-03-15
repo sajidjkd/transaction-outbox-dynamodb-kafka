@@ -11,14 +11,15 @@ import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import com.aws.outboxpattern.domain.dto.CreateOrderCommand;
-import com.aws.outboxpattern.domain.service.OrderApplicationService;
-import com.aws.outboxpattern.domain.service.OrderApplicationServiceImpl;
+import com.aws.outboxpattern.application.dto.CreateOrderCommand;
+import com.aws.outboxpattern.application.service.OrderApplicationService;
+import com.aws.outboxpattern.application.service.OrderApplicationServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.http.HttpStatusCode;
 import software.amazon.awssdk.http.SdkHttpMethod;
-
+@Slf4j
 public class OrderRequestHandler implements RequestStreamHandler {
 
 	private static ObjectMapper mapper = new ObjectMapper();
@@ -30,8 +31,9 @@ public class OrderRequestHandler implements RequestStreamHandler {
 		AwsProxyRequest request = mapper.readValue(reader, AwsProxyRequest.class);
 
 		AwsProxyResponse awsProxyResponse = new AwsProxyResponse();
-		
-		System.out.println("awsProxyResponse:"+awsProxyResponse);
+
+		log.info("Sysout awsProxyResponse:"+awsProxyResponse);
+		log.info("Logging awsProxyResponse:"+awsProxyResponse);
 
 		try {
 
@@ -39,7 +41,7 @@ public class OrderRequestHandler implements RequestStreamHandler {
 
 			if (request.getHttpMethod().equalsIgnoreCase(SdkHttpMethod.POST.name())) {
 
-				System.out.println("Inside POST...:::");
+				log.info("Logging:Inside POST...:::");
 
 				CreateOrderCommand createOrderCommand = mapper.readValue(request.getBody(), CreateOrderCommand.class);
 				System.out.println("createOrderCommand::"+createOrderCommand);

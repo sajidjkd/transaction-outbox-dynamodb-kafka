@@ -1,0 +1,125 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Template for outboxpattern
+Parameters:
+  OrderApiLambdaFunctionName:
+    Type: String
+    Description: function name
+    Default: order-api
+Resources:
+  OrderTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Order
+      AttributeDefinitions:
+      - AttributeName: customerId
+        AttributeType: S
+      - AttributeName: orderId
+        AttributeType: S
+      KeySchema:
+      - AttributeName: customerId
+        KeyType: HASH
+      - AttributeName: orderId
+        KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  OrderItemTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: OrderItem
+      AttributeDefinitions:
+      - AttributeName: orderId
+        AttributeType: S
+      - AttributeName: orderItemId
+        AttributeType: S
+      KeySchema:
+      - AttributeName: orderId
+        KeyType: HASH
+      - AttributeName: orderItemId
+        KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  OrderPaymentOutboxTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: OrderPaymentOutbox
+      AttributeDefinitions:
+      - AttributeName: id
+        AttributeType: S
+      KeySchema:
+      - AttributeName: id
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  OrderApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: OrderApiFunction
+      Handler: com.aws.outboxpattern.infrastructure.lambda.OrderRequestHandler::handleRequest
+      FunctionName:
+        Ref: OrderApiLambdaFunctionName
+      Architectures:
+      - arm64
+      Runtime: java11
+      MemorySize: 512
+      Timeout: 300
+      Tracing: Active
+      Tags:
+        Application: outboxpattern
+      Environment:
+        Variables:
+          ORDER_TABLE:
+            Ref: OrderTable
+          ORDER_ITEM_TABLE:
+            Ref: OrderItemTable
+          ORDER_PAYMENT_OUTBOX_TABLE:
+            Ref: OrderPaymentOutboxTable
+      Policies:
+        Statement:
+        - Effect: Allow
+          Action:
+          - dynamodb:*
+          Resource:
+          - Fn::Sub:
+            - arn:aws:dynamodb:*:*:table/${Table}
+            - Table:
+                Ref: OrderTable
+          - Fn::Sub:
+            - arn:aws:dynamodb:*:*:table/${Table}
+            - Table:
+                Ref: OrderItemTable
+          - Fn::Sub:
+            - arn:aws:dynamodb:*:*:table/${Table}
+            - Table:
+                Ref: OrderPaymentOutboxTable
+        - Effect: Allow
+          Action:
+          - logs:*
+          Resource:
+          - '*'
+      Events:
+        HealthCheck:
+          Type: Api
+          Properties:
+            Path: /v1/health
+            Method: get
+        GetMusic:
+          Type: Api
+          Properties:
+            Path: /v1/order
+            Method: get
+        PostMusic:
+          Type: Api
+          Properties:
+            Path: /v1/order
+            Method: post
+    Metadata:
+      SamResourceId: OrderApiFunction
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL for Dev stage for Order Get function
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/v1/order
